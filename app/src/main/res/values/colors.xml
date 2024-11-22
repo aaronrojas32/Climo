@@ -1,0 +1,13 @@
+<resources>
+    <color name="background_50">#f2f7fb</color>
+    <color name="background100">#e7f0f8</color>
+    <color name="background_200">#d3e2f2</color>
+    <color name="main_300">#b9cfe8</color>
+    <color name="main_400">#9cb6dd</color>
+    <color name="main_500">#839dd1</color>
+    <color name="main_600">#6a7fc1</color>
+    <color name="text_700">#6374ae</color>
+    <color name="text_800">#4a5989</color>
+    <color name="text_900">#414e6e</color>
+    <color name="text_main">#262c40</color>
+</resources>
