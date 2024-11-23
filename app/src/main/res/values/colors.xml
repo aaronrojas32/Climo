@@ -10,4 +10,7 @@
     <color name="text_800">#4a5989</color>
     <color name="text_900">#414e6e</color>
     <color name="text_main">#262c40</color>
+
+    <!--Color usado para generar la paleta-->
+    <color name="genarator">#6374ae</color>
 </resources>
