@@ -1,11 +1,11 @@
 package model;
 
-public class Forecast {
+public class ForecastItem {
     private String time;
-    private double temperature;
-    private String icon;
+    private String temperature;
+    private int icon;
 
-    public Forecast(String time, double temperature, String icon) {
+    public ForecastItem(String time, String temperature, int icon) {
         this.time = time;
         this.temperature = temperature;
         this.icon = icon;
@@ -15,11 +15,11 @@ public class Forecast {
         return time;
     }
 
-    public double getTemperature() {
+    public String getTemperature() {
         return temperature;
     }
 
-    public String getIcon() {
+    public int getIcon() {
         return icon;
     }
 }
