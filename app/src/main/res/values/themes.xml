@@ -2,6 +2,9 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.Climo" parent="Theme.Material3.DayNight.NoActionBar">
 
+        <!-- Fuente variable -->
+        <item name="fontFamily">@font/parkinsans_regular</item>
+
         <item name="colorPrimary">@color/text_main</item>
         <item name="colorPrimaryVariant">@color/text_700</item>
         <item name="colorOnPrimary">@android:color/white</item>
