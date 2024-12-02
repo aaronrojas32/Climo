@@ -13,4 +13,4 @@
 .externalNativeBuild
 .cxx
 local.properties
-/src/main/res/values/apikeys.xml
+Climo/src/main/res/values/apikeys.xml
