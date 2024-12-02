@@ -1,11 +1,17 @@
 package com.example.climo;
 
-import android.os.Bundle;
-import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 
@@ -17,28 +23,40 @@ import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView tvCity, tvTemperature, tvDescription;
+    private EditText cityInput;
+    private Button fetchWeatherButton;
+    private TextView weatherDisplay;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Referencias a los elementos del layout
-        tvCity = findViewById(R.id.tvCity);
-        tvTemperature = findViewById(R.id.tvTemperature);
-        tvDescription = findViewById(R.id.tvDescription);
+        cityInput = findViewById(R.id.editTextCity);
+        fetchWeatherButton = findViewById(R.id.buttonGetWeather);
+        weatherDisplay = findViewById(R.id.textViewTemperature);
 
-        // Obtener el clima actual para una ciudad predeterminada
-        fetchWeatherData("London"); // Cambia "London" por una ciudad predeterminada
+        fetchWeatherButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String city = cityInput.getText().toString().trim();
+                if (!city.isEmpty()) {
+                    fetchWeather(city);
+                } else {
+                    Toast.makeText(MainActivity.this, "Please enter a city", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
-    private void fetchWeatherData(String city) {
-        // Obtener la clave API desde los recursos
-        String apiKey = getString(R.string.weather_api_key);
-        String url = "https://api.weatherapi.com/v1/current.json?key=" + apiKey + "&q=" + city;
+    private void fetchWeather(String city) {
+        String API_KEY = getString(R.string.weather_api_key); // Obtén la clave desde apikeys.xml
+        String url = "https://api.weatherapi.com/v1/current.json?key=" + API_KEY + "&q=" + city;
+
+        Log.d("WeatherAPI", "Generated URL: " + url); // Log para verificar la URL generada
 
         OkHttpClient client = new OkHttpClient();
+
         Request request = new Request.Builder()
                 .url(url)
                 .build();
@@ -46,33 +64,37 @@ public class MainActivity extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Network error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                Log.e("WeatherAPI", "Network error", e);
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                if (response.isSuccessful()) {
+                if (!response.isSuccessful()) {
+                    String errorBody = response.body().string();
+                    Log.e("WeatherAPI", "API Error: " + errorBody); // Muestra el error completo
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "API Error: " + errorBody, Toast.LENGTH_LONG).show());
+                    return;
+                }
+
+                try {
                     String jsonResponse = response.body().string();
-                    runOnUiThread(() -> parseWeatherData(jsonResponse));
+                    Log.d("WeatherAPI", "Response: " + jsonResponse); // Log para la respuesta completa
+                    JSONObject jsonObject = new JSONObject(jsonResponse);
+                    JSONObject current = jsonObject.getJSONObject("current");
+                    String temperature = current.getString("temp_c");
+                    String condition = current.getJSONObject("condition").getString("text");
+
+                    String weatherInfo = "Temperature: " + temperature + "°C\n" +
+                            "Condition: " + condition;
+
+                    runOnUiThread(() -> weatherDisplay.setText(weatherInfo));
+
+                } catch (JSONException e) {
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Parsing error", Toast.LENGTH_SHORT).show());
+                    Log.e("WeatherAPI", "JSON Parsing error", e);
                 }
             }
         });
-    }
-
-    private void parseWeatherData(String jsonResponse) {
-        // Usar Gson para analizar la respuesta JSON
-        JsonObject jsonObject = JsonParser.parseString(jsonResponse).getAsJsonObject();
-        JsonObject current = jsonObject.getAsJsonObject("current");
-        JsonObject location = jsonObject.getAsJsonObject("location");
-
-        // Obtener datos del JSON
-        String city = location.get("name").getAsString();
-        String temperature = current.get("temp_c").getAsString() + "°C";
-        String description = current.getAsJsonObject("condition").get("text").getAsString();
-
-        // Actualizar la UI
-        tvCity.setText(city);
-        tvTemperature.setText(temperature);
-        tvDescription.setText(description);
     }
 }

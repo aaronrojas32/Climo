@@ -1,52 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <!-- Título de la ciudad -->
-    <TextView
-        android:id="@+id/tvCity"
-        android:layout_width="wrap_content"
+    <!-- Campo de texto para que el usuario escriba la ciudad -->
+    <EditText
+        android:id="@+id/editTextCity"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Ciudad"
-        android:textSize="24sp"
-        android:fontFamily="@font/parkinsans_bold"
-        android:textColor="@color/text_main"
-        app:layout_constraintTop_toTopOf="parent"
+        android:hint="Enter city name"
+        android:inputType="text"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="32dp" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:padding="16dp"
+        android:layout_marginTop="16dp" />
 
-    <!-- Temperatura -->
-    <TextView
-        android:id="@+id/tvTemperature"
+    <!-- Botón para actualizar el clima -->
+    <Button
+        android:id="@+id/buttonGetWeather"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="--°C"
-        android:textSize="60sp"
-        android:fontFamily="@font/parkinsans_extrabold"
-        android:textColor="@color/main_500"
-        app:layout_constraintTop_toBottomOf="@id/tvCity"
+        android:text="Get Weather"
+        app:layout_constraintTop_toBottomOf="@id/editTextCity"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp" />
 
-    <!-- Descripción del clima -->
+    <!-- Texto que muestra la temperatura -->
     <TextView
-        android:id="@+id/tvDescription"
+        android:id="@+id/textViewTemperature"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Descripción"
+        android:text="Temperature will appear here"
         android:textSize="18sp"
-        android:fontFamily="@font/parkinsans_regular"
-        android:textColor="@color/text_700"
-        app:layout_constraintTop_toBottomOf="@id/tvTemperature"
+        app:layout_constraintTop_toBottomOf="@id/buttonGetWeather"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="16dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
