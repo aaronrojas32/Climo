@@ -33,8 +33,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         cityInput = findViewById(R.id.editTextCity);
-        fetchWeatherButton = findViewById(R.id.buttonGetWeather);
-        weatherDisplay = findViewById(R.id.textViewTemperature);
+        fetchWeatherButton = findViewById(R.id.buttonFetchWeather);
+        weatherDisplay = findViewById(R.id.actualWeather);
 
         fetchWeatherButton.setOnClickListener(new View.OnClickListener() {
             @Override

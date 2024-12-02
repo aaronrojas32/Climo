@@ -55,7 +55,7 @@
         android:id="@+id/buttonFetchWeather"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/search"
+        android:text="@string/search_button"
         android:layout_marginTop="20dp"
         app:layout_constraintTop_toBottomOf="@id/editTextCity"
         app:layout_constraintStart_toStartOf="parent"
@@ -65,17 +65,31 @@
         android:textColor="@android:color/white"
         android:layout_marginHorizontal="32dp" />
 
+
     <!-- Pie de página -->
     <TextView
         android:id="@+id/footer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Powered by WeatherAPI"
+        android:text="@string/powered_by_weatherapi"
         android:textSize="14sp"
         android:textColor="@color/text_700"
         android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/actualWeather"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Actual Weather"
+        android:textAlignment="center"
+        android:textSize="30sp"
+        android:textColor="@color/text_900"
+        app:layout_constraintBottom_toTopOf="@+id/footer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonFetchWeather" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
