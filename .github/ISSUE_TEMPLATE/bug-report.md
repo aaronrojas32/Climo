@@ -36,3 +36,11 @@ If applicable, add screenshots to help explain your problem.
 
 **Additional context**
 Add any other context about the problem here.
+
+**Do you want to work on this issue?**
+
+Yes / No
+
+**Additional information**
+
+If anyone wants to work on this issue, please comment down below. 
