@@ -2,6 +2,7 @@ package com.example.climo;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.ActionBar;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -24,16 +25,19 @@ import okhttp3.Response;
 public class MainActivity extends AppCompatActivity {
 
     private EditText cityInput;
-    private Button fetchWeatherButton;
     private TextView weatherDisplay;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        
+        //Hide status bar
+        hideStatusBar();
+        
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         cityInput = findViewById(R.id.editTextCity);
-        fetchWeatherButton = findViewById(R.id.buttonFetchWeather);
+        Button fetchWeatherButton = findViewById(R.id.buttonFetchWeather);
         weatherDisplay = findViewById(R.id.actualWeather);
 
         fetchWeatherButton.setOnClickListener(new View.OnClickListener() {
@@ -47,6 +51,16 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void hideStatusBar(){
+        View decorView = getWindow().getDecorView();
+
+        int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
+        decorView.setSystemUiVisibility(uiOptions);
+
+        ActionBar actionBar = getActionBar();
+        actionBar.hide();
     }
 
     private void fetchWeather(String city) {
