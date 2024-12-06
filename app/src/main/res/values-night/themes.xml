@@ -1,7 +1,26 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.Climo" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+
+        <!-- Fuente variable -->
+        <item name="fontFamily">@font/parkinsans_regular</item>
+
+        <item name="colorPrimary">@color/text_main</item>
+        <item name="colorPrimaryVariant">@color/text_700</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+
+        <!-- Color Secundario -->
+        <item name="colorSecondary">@color/main_300</item>
+        <item name="colorSecondaryVariant">@color/main_400</item>
+        <item name="colorOnSecondary">@android:color/black</item>
+
+        <!-- Barra de estado -->
+        <item name="android:statusBarColor">@color/background_50</item>
+        <!-- Fondo -->
+        <item name="android:colorBackground">@color/background_50</item>
+        <item name="colorOnBackground">@color/background100</item>
+
     </style>
+
+    <style name="Theme.Climo" parent="Base.Theme.Climo" />
 </resources>

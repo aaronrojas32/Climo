@@ -31,9 +31,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        
-        //Hide status bar
-        hideStatusBar();
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -61,18 +58,6 @@ public class MainActivity extends AppCompatActivity {
         if (view != null) {
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-        }
-    }
-
-    private void hideStatusBar(){
-        View decorView = getWindow().getDecorView();
-
-        int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
-        decorView.setSystemUiVisibility(uiOptions);
-
-        ActionBar actionBar = getActionBar();
-        if(actionBar != null) {
-            actionBar.hide();
         }
     }
 
