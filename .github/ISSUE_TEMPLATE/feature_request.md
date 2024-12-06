@@ -18,3 +18,11 @@ A clear and concise description of any alternative solutions or features you've 
 
 **Additional context**
 Add any other context or screenshots about the feature request here.
+
+**Do you want to work on this issue?**
+
+Yes/No
+
+**Additional information**
+
+If anyone wants to work on this issue, please comment down below. 
