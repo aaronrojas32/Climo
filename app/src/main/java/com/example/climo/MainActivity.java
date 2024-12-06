@@ -3,9 +3,11 @@ package com.example.climo;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.ActionBar;
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -32,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
         
         //Hide status bar
         hideStatusBar();
-        
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -45,12 +47,21 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String city = cityInput.getText().toString().trim();
                 if (!city.isEmpty()) {
+                    hideKeyboard();
                     fetchWeather(city);
                 } else {
                     Toast.makeText(MainActivity.this, "Please enter a city", Toast.LENGTH_SHORT).show();
                 }
             }
         });
+    }
+
+    private void hideKeyboard() {
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 
     private void hideStatusBar(){
@@ -60,7 +71,9 @@ public class MainActivity extends AppCompatActivity {
         decorView.setSystemUiVisibility(uiOptions);
 
         ActionBar actionBar = getActionBar();
-        actionBar.hide();
+        if(actionBar != null) {
+            actionBar.hide();
+        }
     }
 
     private void fetchWeather(String city) {
