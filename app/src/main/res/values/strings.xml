@@ -5,4 +5,6 @@
     <string name="search_button">Search</string>
     <string name="powered_by_weatherapi">Powered by WeatherAPI</string>
     <string name="app_version">Version 0.1.12-beta</string>
+    <string name="temp_preview">--ºC</string>
+    <string name="condition">Condition: </string>
 </resources>
