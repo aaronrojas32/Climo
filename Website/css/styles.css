@@ -1,0 +1,494 @@
+/*Climo color pallete*/
+:root {
+  --color-background-50: #f2f7fb;
+  --color-background-100: #e7f0f8;
+  --color-background-200: #d3e2f2;
+  --color-main-300: #b9cfe8;
+  --color-main-400: #9cb6dd;
+  --color-main-500: #839dd1;
+  --color-main-600: #6a7fc1;
+  --color-text-700: #6374ae;
+  --color-text-800: #4a5989;
+  --color-text-900: #414e6e;
+  --color-text-main: #262c40;
+}
+
+/*Global Font*/
+body {
+  font-family: "Parkinsans", serif, Arial, sans-serif;
+  font-weight: 400;
+  /* Predeterminado */
+  font-style: normal;
+  /* Predeterminado */
+  font-optical-sizing: auto;
+}
+
+/*Bold*/
+b,
+strong {
+  font-weight: 700;
+}
+
+/*Cursive*/
+i,
+em {
+  font-style: italic;
+}
+
+/*Headers*/
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Parkinsans", serif;
+  font-weight: 800;
+}
+
+/* Navbar styles */
+.navbar {
+  background-color: #f2f7fb;
+  /* Light background to match the app's palette */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  /* Subtle shadow for depth */
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.navbar a.navbar-brand {
+  font-size: 1.5rem;
+  color: #6374ae;
+  /* Accent color */
+  text-transform: uppercase;
+  transition: color 0.3s ease;
+}
+
+.navbar a.navbar-brand:hover {
+  color: #4a5989;
+  /* Slightly darker accent on hover */
+  text-decoration: none;
+}
+
+.navbar-toggler {
+  border: none;
+  background-color: transparent;
+}
+
+.navbar-toggler:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  /* Light hover effect for the toggle button */
+}
+
+.navbar .navbar-nav .nav-link {
+  font-size: 1rem;
+  color: #4a5989;
+  /* Text color */
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.navbar .navbar-nav .nav-link:hover {
+  color: #6374ae;
+  /* Highlighted text color on hover */
+  text-decoration: none;
+}
+
+.navbar .navbar-nav .nav-item:last-child .nav-link {
+  font-size: 1.2rem;
+  color: #6374ae;
+  /* Icon color */
+  padding-left: 10px;
+}
+
+.navbar .navbar-nav .nav-item:last-child .nav-link:hover {
+  color: #4a5989;
+}
+
+/* Sticky effect for the navbar */
+.sticky-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+}
+
+
+/* Developers Section Styles */
+.section-developers {
+  background-color: #e7f0f8;
+  padding: 3rem 0;
+}
+
+.section-developers h2 {
+  color: #6374ae;
+  font-weight: bold;
+}
+
+.section-developers p {
+  color: #414e6e;
+  line-height: 1.6;
+}
+
+/* Modern Card Styles */
+.modern-card {
+  background: linear-gradient(145deg, #dbe9f5, #f2f7fb);
+  border: 1px solid #b9cfe8;
+  /* Subtle border for better contrast */
+  border-radius: 12px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05);
+  /* Stronger shadow for depth */
+  transition: all 0.3s ease;
+}
+
+.modern-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
+  /* Shadow intensifies on hover */
+}
+
+/* Headings in Cards */
+.modern-card h5 {
+  color: #414e6e;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+}
+
+/* Paragraphs in Cards */
+.modern-card p {
+  color: #4a5989;
+  line-height: 1.6;
+}
+
+/* Links */
+.modern-card a {
+  color: #6374ae;
+  text-decoration: underline;
+}
+
+.modern-card a:hover {
+  text-decoration: none;
+  color: #4a5989;
+}
+
+
+/* Button */
+.section-developers .btn-primary {
+  background-color: #4a5989;
+  color: #ffffff;
+  border: none;
+  padding: 0.8rem 2rem;
+  font-size: 1rem;
+}
+
+.section-developers .btn-primary:hover {
+  background-color: #6374ae;
+}
+
+/* Scroll to Top Button */
+#scrollToTop {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #6374ae; /* Accent color */
+  color: #ffffff; /* White icon */
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+  cursor: pointer;
+  z-index: 1000; /* Ensure it's above other elements */
+
+  /* Animation styles */
+  opacity: 0; /* Start invisible */
+  transform: translateY(20px); /* Start slightly below */
+  transition: opacity 0.3s ease, transform 0.3s ease; /* Smooth transition */
+  display: flex; /* Ensure it occupies space */
+  visibility: hidden; /* Prevent interactions when hidden */
+}
+
+#scrollToTop.show {
+  opacity: 1; /* Fully visible */
+  transform: translateY(0); /* Reset position */
+  visibility: visible; /* Allow interactions */
+}
+
+#scrollToTop:hover {
+  background-color: #4a5989; /* Darker accent color */
+  transform: scale(1.1); /* Slightly larger on hover */
+}
+
+/* Footer Styles */
+.footer {
+  background-color: #f2f7fb; /* Light background */
+  border-top: 2px solid #d3e2f2; /* Subtle top border */
+  padding: 1.5rem 0;
+}
+
+.footer .footer-link {
+  color: #4a5989; /* Link color */
+  text-decoration: none;
+  margin: 0 10px;
+  transition: color 0.3s ease;
+}
+
+.footer .footer-link:hover {
+  color: #6374ae; /* Hover effect */
+}
+
+.footer .list-inline {
+  margin-bottom: 0;
+}
+
+.footer i {
+  font-size: 1.2rem;
+  margin-right: 5px;
+  vertical-align: middle;
+  color: #4a5989; /* GitHub icon color */
+  transition: color 0.3s ease;
+}
+
+.footer i:hover {
+  color: #6374ae; /* Hover effect for icon */
+}
+
+/* Hero Section */
+.hero-section {
+  background-color: #f2f7fb; /* Light background */
+  padding: 3rem 0;
+}
+
+/* How It Works Section */
+.work-step {
+  background-color: #ffffff;
+  border: 1px solid #d3e2f2;
+  border-radius: 10px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.work-step:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Mission Section Block */
+.mission-section .rounded {
+  border-left: 6px solid #6374ae;
+}
+
+
+/* Features Section */
+.features-section .feature-card {
+  background-color: #ffffff;
+  border: 1px solid #d3e2f2;
+  border-radius: 10px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.features-section .feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Mission Section */
+.mission-section {
+  background-color: #f2f7fb;
+}
+
+/* Team Section */
+.team-section .team-card {
+  background-color: #ffffff;
+  border: 1px solid #d3e2f2;
+  border-radius: 10px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.team-section .team-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Call to Action Section */
+.cta-section {
+  background-color: #e7f0f8; /* Subtle light blue */
+  padding: 3rem 0;
+}
+
+.cta-section .btn {
+  border-radius: 50px;
+  padding: 0.8rem 2rem;
+}
+
+/* Hero Section */
+.hero-section {
+  background-color: #f2f7fb;
+}
+
+/* Buttons */
+#download-apk {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#download-apk:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* Older Versions Section */
+.older-versions-section .btn-outline-dark {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.older-versions-section .btn-outline-dark:hover {
+  background-color: #6374ae;
+  color: #ffffff;
+}
+
+#updates-container .card {
+  border: 1px solid #d3e2f2; /* Light border */
+  border-radius: 10px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#updates-container .card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+  color: #6374ae; /* Accent color */
+}
+
+.card-subtitle {
+  font-size: 0.9rem;
+  color: #4a5989;
+}
+
+/* Estilo para las tarjetas */
+#updates-container .card {
+  border: 1px solid #d3e2f2; /* Light border */
+  border-radius: 10px;
+  background: #f2f7fb; /* Fondo claro */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#updates-container .card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Títulos y subtítulos */
+.card-title {
+  color: #6374ae; /* Accent color */
+  font-weight: bold;
+}
+
+.card-subtitle {
+  font-size: 0.9rem;
+  color: #4a5989; /* Color secundario */
+}
+
+/* Botón personalizado */
+#updates-container .btn-outline-primary {
+  border-color: #6374ae;
+  color: #6374ae;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+#updates-container .btn-outline-primary:hover {
+  background-color: #6374ae;
+  color: #fff;
+}
+
+/* Estilo para los títulos de los updates */
+#updates-container .card-title {
+  color: #414e6e; /* Color principal del texto */
+  font-weight: bold;
+  font-size: 1.25rem; /* Tamaño del título */
+  margin-bottom: 0.5rem;
+  text-transform: capitalize; /* Opcional: para asegurar un formato uniforme */
+  transition: color 0.3s ease;
+}
+
+/* Hover en títulos para dar un efecto sutil */
+#updates-container .card-title:hover {
+  color: #6374ae; /* Color de acento al pasar el mouse */
+}
+
+/* Títulos de las tarjetas */
+#updates-container .card-title {
+  color: #414e6e; /* Color principal */
+  font-weight: bold;
+  font-size: 1.5rem; /* Títulos más grandes */
+  margin-bottom: 0.75rem;
+  text-transform: capitalize; /* Opcional: formato uniforme */
+  transition: color 0.3s ease;
+}
+
+/* Hover en títulos */
+#updates-container .card-title:hover {
+  color: #839dd1; /* Color de acento al pasar el mouse */
+}
+
+/* Estilo para las tarjetas */
+#updates-container .card {
+  border: 2px solid #d3e2f2; /* Borde claro */
+  border-radius: 10px;
+  background: #f2f7fb; /* Fondo claro */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Sombra más notable */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#updates-container .card:hover {
+  transform: translateY(-5px); /* Levanta la tarjeta al pasar el mouse */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* Sombra más intensa */
+}
+
+/* Subtítulos de las tarjetas */
+#updates-container .card-subtitle {
+  font-size: 1rem;
+  color: #4a5989; /* Color secundario */
+  margin-bottom: 1rem;
+}
+
+/* Títulos de las tarjetas */
+#updates-container .card-title {
+  color: #414e6e; /* Color principal */
+  font-weight: bold;
+  font-size: 1.5rem; /* Títulos más grandes */
+  margin-bottom: 0.75rem;
+  text-transform: capitalize; /* Opcional: formato uniforme */
+  transition: color 0.3s ease;
+}
+
+/* Hover en títulos */
+#updates-container .card-title:hover {
+  color: #839dd1; /* Color de acento al pasar el mouse */
+}
+
+/* Estilo para las tarjetas */
+#updates-container .card {
+  border: 3px solid #c6d6f7; /* Borde más grueso con un color más visible */
+  border-radius: 12px; /* Bordes ligeramente redondeados */
+  background: #f2f7fb; /* Fondo claro */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Sombra notable */
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+/* Efecto hover en las tarjetas */
+#updates-container .card:hover {
+  transform: translateY(-5px); /* Levanta la tarjeta */
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2); /* Sombra más intensa */
+  border-color: #6374ae; /* Borde cambia a un color más destacado */
+}
+
+/* Subtítulos de las tarjetas */
+#updates-container .card-subtitle {
+  font-size: 1rem;
+  color: #4a5989; /* Color secundario */
+  margin-bottom: 1rem;
+}
