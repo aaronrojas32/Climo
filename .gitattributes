@@ -1,2 +1,8 @@
 # Exclude the Website folder from language statistics
 Website/** linguist-vendored
+
+# Exclude Jekyll-specific files and folders
+*.html linguist-vendored
+*.css linguist-vendored
+*.js linguist-vendored
+*.yml linguist-vendored
