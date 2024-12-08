@@ -1,0 +1,2 @@
+# Exclude the Website folder from language statistics
+Website/** linguist-vendored
