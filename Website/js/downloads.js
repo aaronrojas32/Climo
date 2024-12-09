@@ -7,7 +7,18 @@ function isMobileDevice() {
   return /Mobi|Android/i.test(navigator.userAgent);
 }
 
-// Function to fetch the latest release and update the download button
+// Function to force opening a link in the system's default browser
+function openInDefaultBrowser(url) {
+  const a = document.createElement("a");
+  a.href = url;
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+// Function to fetch the latest release and set the download button behavior
 async function fetchLatestRelease() {
   const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/releases/latest`;
 
@@ -22,6 +33,12 @@ async function fetchLatestRelease() {
         const downloadBtn = document.getElementById("download-apk");
         downloadBtn.href = apkAsset.browser_download_url; // Set the APK link
         downloadBtn.innerHTML = `<i class="bi bi-download"></i> Download APK (${data.name})`;
+
+        // Override the default click behavior to force open in default browser
+        downloadBtn.addEventListener("click", function (event) {
+          event.preventDefault(); // Prevent default behavior
+          openInDefaultBrowser(apkAsset.browser_download_url);
+        });
 
         // Show a message for mobile users
         if (isMobileDevice()) {
