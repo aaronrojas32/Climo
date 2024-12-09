@@ -2,20 +2,15 @@
 const repoOwner = "aaronrojas32";
 const repoName = "Climo";
 
-// Function to check if the user is on a mobile device
-function isMobileDevice() {
-  return /Mobi|Android/i.test(navigator.userAgent);
-}
-
 // Function to force opening a link in the system's default browser
 function openInDefaultBrowser(url) {
   const a = document.createElement("a");
   a.href = url;
-  a.target = "_blank";
-  a.rel = "noopener noreferrer";
+  a.target = "_blank"; // Open in a new tab or external browser
+  a.rel = "noopener noreferrer"; // Ensure security and avoid issues with WebView
   document.body.appendChild(a);
   a.click();
-  document.body.removeChild(a);
+  document.body.removeChild(a); // Clean up the dynamically created link
 }
 
 // Function to fetch the latest release and set the download button behavior
@@ -36,21 +31,9 @@ async function fetchLatestRelease() {
 
         // Override the default click behavior to force open in default browser
         downloadBtn.addEventListener("click", function (event) {
-          event.preventDefault(); // Prevent default behavior
-          openInDefaultBrowser(apkAsset.browser_download_url);
+          event.preventDefault(); // Prevent default click behavior
+          openInDefaultBrowser(apkAsset.browser_download_url); // Force external browser
         });
-
-        // Show a message for mobile users
-        if (isMobileDevice()) {
-          const message = document.createElement("p");
-          message.style.color = "#414e6e";
-          message.style.marginTop = "10px";
-          message.innerHTML = `
-            If the download doesn't start, please copy and paste this link into your browser: 
-            <a href="${apkAsset.browser_download_url}" target="_blank" rel="noopener noreferrer">${apkAsset.browser_download_url}</a>
-          `;
-          downloadBtn.parentNode.appendChild(message);
-        }
       } else {
         console.error("No APK file found in the latest release.");
       }
