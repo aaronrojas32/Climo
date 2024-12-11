@@ -87,6 +87,21 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
+        android:id="@+id/locationName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/location_name"
+        android:textColor="@color/text_900"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/actualWeather"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonFetchWeather" />
+
+
+    <TextView
         android:id="@+id/actualWeather"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -120,7 +135,7 @@
         android:layout_height="wrap_content"
         android:text="@string/condition"
         android:textColor="@color/text_900"
-        android:textSize="35sp"
+        android:textSize="30sp"
         app:layout_constraintBottom_toTopOf="@+id/footer"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
