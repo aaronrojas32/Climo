@@ -1,24 +1,26 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+    <!-- Base application theme -->
     <style name="Base.Theme.Climo" parent="Theme.Material3.DayNight.NoActionBar">
 
         <!-- Fuente variable -->
         <item name="fontFamily">@font/parkinsans_regular</item>
 
-        <item name="colorPrimary">@color/text_main</item>
-        <item name="colorPrimaryVariant">@color/text_700</item>
+        <!-- Colores principales -->
+        <item name="colorPrimary">@color/background_50</item>
+        <item name="colorPrimaryVariant">@color/background_200</item>
         <item name="colorOnPrimary">@android:color/white</item>
 
-        <!-- Color Secundario -->
+        <!-- Colores secundarios -->
         <item name="colorSecondary">@color/main_300</item>
         <item name="colorSecondaryVariant">@color/main_400</item>
         <item name="colorOnSecondary">@android:color/black</item>
 
         <!-- Barra de estado -->
-        <item name="android:statusBarColor">@color/background_50</item>
+        <item name="android:statusBarColor">@color/backgoruound_night</item>
+
         <!-- Fondo -->
-        <item name="android:colorBackground">@color/background_50</item>
-        <item name="colorOnBackground">@color/background100</item>
+        <item name="android:colorBackground">@color/backgoruound_night</item>
+        <item name="colorOnBackground">@color/backgoruound_night</item>
 
     </style>
 

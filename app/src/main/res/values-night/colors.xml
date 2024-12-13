@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="text_main">#FFFFFF</color> <!-- Texto principal -->
+    <color name="text_800">#CCCCCC</color> <!-- Subtítulos -->
+    <color name="text_700">#BBBBBB</color> <!-- Otros textos -->
+    <color name="text_900">#FFFFFF</color> <!-- Textos destacados -->
+    <color name="main_600">#5468FF</color> <!-- Color del botón -->
+</resources>
