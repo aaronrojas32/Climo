@@ -4,7 +4,7 @@ plugins {
 
 android {
     namespace = "com.example.climo"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.climo"
