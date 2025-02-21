@@ -1,7 +1,9 @@
 package com.example.climo;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -9,73 +11,100 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.IOException;
-
+import java.net.URLEncoder;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+/**
+ * Main activity handling weather data fetching and UI interactions
+ */
 public class MainActivity extends AppCompatActivity {
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+    private static final long LOCATION_TIMEOUT_MS = 15000;
 
-    // UI elements
-    private EditText cityInput; // Input field for city name
-    private TextView weatherDisplay; // Displays temperature
-    private TextView conditionDisplay; // Displays weather condition
-    private TextView locationName; // Displays location name (current or searched)
-    private LocationManager locationManager; // For accessing GPS location
+    // UI Components
+    private EditText cityInput;
+    private TextView weatherDisplay;
+    private TextView conditionDisplay;
+    private TextView locationName;
+    private ProgressBar progressBar;
+
+    // Location Services
+    private LocationManager locationManager;
+    private Handler locationTimeoutHandler;
+    private LocationListener locationListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialize UI components
+        initializeUIComponents();
+        setupWeatherFetchButton();
+        checkLocationPermission();
+    }
+
+    /**
+     * Initializes all UI components from layout
+     */
+    private void initializeUIComponents() {
         cityInput = findViewById(R.id.editTextCity);
-        Button fetchWeatherButton = findViewById(R.id.buttonFetchWeather);
         weatherDisplay = findViewById(R.id.actualWeather);
         conditionDisplay = findViewById(R.id.condition);
         locationName = findViewById(R.id.locationName);
+        progressBar = findViewById(R.id.progressBar);
+    }
 
-        // Set up button to fetch weather based on entered city
-        fetchWeatherButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String city = cityInput.getText().toString().trim();
-                if (!city.isEmpty()) {
-                    hideKeyboard(); // Hide keyboard when button is clicked
-                    fetchWeather(city, false); // Fetch weather for entered city
-                } else {
-                    Toast.makeText(MainActivity.this, "Please enter a city", Toast.LENGTH_SHORT).show();
-                }
+    /**
+     * Sets up click listener for weather fetch button
+     */
+    private void setupWeatherFetchButton() {
+        Button fetchButton = findViewById(R.id.buttonFetchWeather);
+        fetchButton.setOnClickListener(v -> {
+            String city = cityInput.getText().toString().trim();
+            if (!city.isEmpty()) {
+                hideKeyboard();
+                fetchWeather(city, false);
+            } else {
+                showToast("Please enter a city name");
             }
         });
+    }
 
-        // Check for location permission and fetch current location weather if granted
-        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+    /**
+     * Checks location permission status
+     */
+    private void checkLocationPermission() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
             fetchCurrentLocationWeather();
         } else {
-            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    LOCATION_PERMISSION_REQUEST_CODE
+            );
         }
     }
 
     /**
-     * Hides the soft keyboard from the screen.
+     * Hides the soft keyboard
      */
     private void hideKeyboard() {
         View view = this.getCurrentFocus();
@@ -86,121 +115,236 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Fetches weather data for the specified location.
-     * @param location The city name or GPS coordinates (latitude,longitude).
-     * @param isCurrentLocation True if the location is obtained from GPS, false if it's user input.
+     * Fetches weather data from WeatherAPI
+     * @param location City name or coordinates
+     * @param isCurrentLocation True if using device location
      */
     private void fetchWeather(String location, boolean isCurrentLocation) {
-        String API_KEY = getString(R.string.weather_api_key); // API key for WeatherAPI
-        String url = "https://api.weatherapi.com/v1/current.json?key=" + API_KEY + "&q=" + location;
-
-        Log.d("WeatherAPI", "Generated URL: " + url);
-
-        OkHttpClient client = new OkHttpClient();
-
-        // Build the HTTP request
-        Request request = new Request.Builder()
-                .url(url)
-                .build();
-
-        // Execute the HTTP request
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                // Handle network error
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Network error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-                Log.e("WeatherAPI", "Network error", e);
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                if (!response.isSuccessful()) {
-                    // Handle API error
-                    String errorBody = response.body().string();
-                    Log.e("WeatherAPI", "API Error: " + errorBody);
-                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "API Error: " + errorBody, Toast.LENGTH_LONG).show());
-                    return;
-                }
-
-                try {
-                    // Parse the JSON response
-                    String jsonResponse = response.body().string();
-                    Log.d("WeatherAPI", "Response: " + jsonResponse);
-                    JSONObject jsonObject = new JSONObject(jsonResponse);
-                    JSONObject location = jsonObject.getJSONObject("location");
-                    JSONObject current = jsonObject.getJSONObject("current");
-
-                    // Extract relevant data
-                    String cityName = location.getString("name");
-                    String temperature = current.getString("temp_c");
-                    String condition = current.getJSONObject("condition").getString("text");
-
-                    String temp = temperature + "°C";
-                    String cond = "Condition: " + condition;
-
-                    // Update the UI with the fetched data
-                    runOnUiThread(() -> {
-                        locationName.setText(cityName); // Display location name
-                        weatherDisplay.setText(temp); // Display temperature
-                        conditionDisplay.setText(cond); // Display condition
-                    });
-
-                } catch (JSONException e) {
-                    // Handle JSON parsing error
-                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Parsing error", Toast.LENGTH_SHORT).show());
-                    Log.e("WeatherAPI", "JSON Parsing error", e);
-                }
-            }
-        });
-    }
-
-    /**
-     * Fetches the weather data for the user's current location.
-     */
-    private void fetchCurrentLocationWeather() {
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
+        showProgress(true);
         try {
-            // Request GPS location updates
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListener() {
+            String encodedLocation = URLEncoder.encode(location, "UTF-8");
+            String url = buildApiUrl(encodedLocation);
+
+            OkHttpClient client = new OkHttpClient();
+            Request request = new Request.Builder().url(url).build();
+
+            client.newCall(request).enqueue(new Callback() {
                 @Override
-                public void onLocationChanged(@NonNull Location location) {
-                    double latitude = location.getLatitude();
-                    double longitude = location.getLongitude();
-                    String coordinates = latitude + "," + longitude; // Format as "latitude,longitude"
-                    fetchWeather(coordinates, true); // Fetch weather for current location
-                    locationManager.removeUpdates(this); // Stop receiving location updates
+                public void onFailure(Call call, IOException e) {
+                    handleNetworkError();
                 }
 
                 @Override
-                public void onStatusChanged(String provider, int status, Bundle extras) {}
-
-                @Override
-                public void onProviderEnabled(@NonNull String provider) {}
-
-                @Override
-                public void onProviderDisabled(@NonNull String provider) {}
+                public void onResponse(Call call, Response response) throws IOException {
+                    handleApiResponse(response);
+                }
             });
-        } catch (SecurityException e) {
-            Toast.makeText(this, "Location permissions are not granted", Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            handleEncodingError(e);
         }
     }
 
     /**
-     * Handles the result of the location permission request.
+     * Builds API request URL
+     * @param encodedLocation URL-safe location string
+     * @return Complete API URL
+     */
+    private String buildApiUrl(String encodedLocation) {
+        return "https://api.weatherapi.com/v1/current.json?key=" +
+                getString(R.string.weather_api_key) +
+                "&q=" + encodedLocation;
+    }
+
+    /**
+     * Handles API response data
+     * @param response API response object
+     */
+    private void handleApiResponse(Response response) throws IOException {
+        showProgress(false);
+        try {
+            if (response.isSuccessful()) {
+                JSONObject jsonResponse = new JSONObject(response.body().string());
+                processWeatherData(jsonResponse);
+            } else {
+                handleApiError(response);
+            }
+        } catch (JSONException e) {
+            handleJsonError(e);
+        } finally {
+            response.close();
+        }
+    }
+
+    /**
+     * Processes successful weather data
+     * @param jsonResponse Parsed JSON response
+     */
+    private void processWeatherData(JSONObject jsonResponse) throws JSONException {
+        if (!jsonResponse.has("location") || !jsonResponse.has("current")) {
+            throw new JSONException("Invalid API response structure");
+        }
+
+        JSONObject locationData = jsonResponse.getJSONObject("location");
+        JSONObject currentData = jsonResponse.getJSONObject("current");
+
+        String city = locationData.getString("name");
+        String temp = currentData.getString("temp_c") + "°C";
+        String condition = "Condition: " + currentData.getJSONObject("condition").getString("text");
+
+        updateWeatherUI(city, temp, condition);
+    }
+
+    /**
+     * Updates UI with weather information
+     */
+    private void updateWeatherUI(String city, String temperature, String condition) {
+        runOnUiThread(() -> {
+            locationName.setText(city);
+            weatherDisplay.setText(temperature);
+            conditionDisplay.setText(condition);
+        });
+    }
+
+    /**
+     * Handles API error responses
+     */
+    private void handleApiError(Response response) throws IOException {
+        try {
+            String errorBody = response.body().string();
+            JSONObject errorJson = new JSONObject(errorBody);
+            String errorMessage = errorJson.getJSONObject("error").getString("message");
+            showToast("Error: " + errorMessage);
+        } catch (JSONException e) {
+            showToast("Unknown API error occurred");
+        }
+    }
+
+    /**
+     * Fetches current location weather data
+     */
+    private void fetchCurrentLocationWeather() {
+        showProgress(true);
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        locationTimeoutHandler = new Handler();
+
+        try {
+            locationListener = new LocationListener() {
+                @Override
+                public void onLocationChanged(@NonNull Location location) {
+                    locationTimeoutHandler.removeCallbacksAndMessages(null);
+                    locationManager.removeUpdates(this);
+                    String coordinates = location.getLatitude() + "," + location.getLongitude();
+                    fetchWeather(coordinates, true);
+                }
+
+                @Override public void onStatusChanged(String provider, int status, Bundle extras) {}
+                @Override public void onProviderEnabled(@NonNull String provider) {}
+
+                @Override
+                public void onProviderDisabled(@NonNull String provider) {
+                    showProgress(false);
+                    showToast("Enable GPS for location services");
+                }
+            };
+
+            locationManager.requestLocationUpdates(
+                    LocationManager.GPS_PROVIDER,
+                    0,
+                    0,
+                    locationListener
+            );
+
+            locationTimeoutHandler.postDelayed(() -> {
+                locationManager.removeUpdates(locationListener);
+                showProgress(false);
+                showToast("Location request timed out");
+            }, LOCATION_TIMEOUT_MS);
+
+        } catch (SecurityException e) {
+            showProgress(false);
+            showToast("Location permission required");
+        }
+    }
+
+    /**
+     * Handles permission request results
      */
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission granted, fetch current location weather
                 fetchCurrentLocationWeather();
             } else {
-                // Permission denied
-                Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show();
+                showProgress(false);
+                showPermissionDeniedDialog();
             }
+        }
+    }
+
+    /**
+     * Shows permission denied explanation dialog
+     */
+    private void showPermissionDeniedDialog() {
+        new AlertDialog.Builder(this)
+                .setMessage("Location access denied. You can still search cities manually.")
+                .setPositiveButton("OK", null)
+                .show();
+    }
+
+    /**
+     * Controls progress bar visibility
+     * @param show True to show progress bar
+     */
+    private void showProgress(boolean show) {
+        runOnUiThread(() -> {
+            Log.d("ProgressBar", "Visibility: " + (show ? "VISIBLE" : "GONE")); // Nuevo log
+            progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
+        });
+    }
+    /**
+     * Displays short toast messages
+     * @param message Message to display
+     */
+    private void showToast(String message) {
+        runOnUiThread(() -> Toast.makeText(this, message, Toast.LENGTH_SHORT).show());
+    }
+
+    /**
+     * Handles network errors
+     */
+    private void handleNetworkError() {
+        showProgress(false);
+        showToast("Network connection required");
+    }
+
+    /**
+     * Handles JSON parsing errors
+     */
+    private void handleJsonError(JSONException e) {
+        showToast("Data parsing error");
+        Log.e("WeatherAPI", "JSON Error", e);
+    }
+
+    /**
+     * Handles URL encoding errors
+     */
+    private void handleEncodingError(IOException e) {
+        showProgress(false);
+        Log.e("WeatherAPI", "Encoding Error", e);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (locationTimeoutHandler != null) {
+            locationTimeoutHandler.removeCallbacksAndMessages(null);
+        }
+        if (locationManager != null && locationListener != null) {
+            locationManager.removeUpdates(locationListener);
         }
     }
 }
