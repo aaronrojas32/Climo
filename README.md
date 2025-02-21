@@ -29,7 +29,7 @@ Welcome to Climo! Thank you for your interest in contributing to this project. T
 ### **Android Virtual Device (AVD) Recommendation**
 For development and testing purposes, the app has been optimized for:
 - **Device:** Pixel 9
-- **API Level:** 33
+- **API Level:** 34
 - **Android Version:** Android 13 ("Tiramisu")
 
 However, Climo is designed to run on any Android device with an API **greater than or equal to 24** (Android 7.0 "Nougat").
