@@ -240,3 +240,84 @@ h1, h2, h3, h4, h5, h6 {
   background-color: var(--color-text-700);
   color: #fff;
 }
+
+/* ============================================================
+   Privacy Policy Specific Styles
+============================================================ */
+#privacy-policy {
+  background-color: var(--color-background-50);
+  padding: 2rem 0;
+}
+
+.privacy-section {
+  margin-bottom: 3rem;
+  background-color: white;
+  border-radius: 12px;
+  padding: 2.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--color-background-200);
+}
+
+.privacy-section h2 {
+  color: var(--color-text-900);
+  font-size: 1.75rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--color-main-300);
+}
+
+.privacy-section ul {
+  padding-left: 1.5rem;
+}
+
+.privacy-section li {
+  margin-bottom: 0.8rem;
+  color: var(--color-text-800);
+  line-height: 1.6;
+}
+
+.privacy-section a {
+  color: var(--color-text-700);
+  text-decoration: underline;
+  transition: color 0.3s ease;
+}
+
+.privacy-section a:hover {
+  color: var(--color-text-800);
+  text-decoration: none;
+}
+
+/* Cards ajustadas para contenido legal */
+.legal-card {
+  background: white;
+  border: 1px solid var(--color-background-200);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.legal-card h3 {
+  color: var(--color-text-900);
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+/* Ajustes específicos para GDPR */
+.gdpr-notice {
+  background-color: var(--color-background-100);
+  border-left: 4px solid var(--color-text-700);
+  padding: 1.25rem;
+  margin: 1.5rem 0;
+}
+
+/* Mejoras de responsive */
+@media (max-width: 768px) {
+  .privacy-section {
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  .privacy-section h2 {
+    font-size: 1.5rem;
+  }
+}
