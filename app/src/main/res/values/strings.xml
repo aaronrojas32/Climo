@@ -4,7 +4,7 @@
     <string name="search">Search for a city…</string>
     <string name="search_button">Search</string>
     <string name="powered_by_weatherapi">Powered by WeatherAPI</string>
-    <string name="app_version">Version 0.2.6-beta</string>
+    <string name="app_version">Version 0.3.26-beta</string>
     <string name="temp_preview">--ºC</string>
     <string name="condition">Condition: </string>
     <string name="location_name">Location: </string>
