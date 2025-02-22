@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -17,22 +18,28 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-/**
- * Main activity handling weather data fetching and UI interactions
- */
 public class MainActivity extends AppCompatActivity {
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
@@ -44,11 +51,12 @@ public class MainActivity extends AppCompatActivity {
     private TextView conditionDisplay;
     private TextView locationName;
     private ProgressBar progressBar;
+    private LinearLayout forecastContainer;
 
     // Location Services
-    private LocationManager locationManager;
+    private android.location.LocationManager locationManager;
     private Handler locationTimeoutHandler;
-    private LocationListener locationListener;
+    private android.location.LocationListener locationListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Initializes all UI components from layout
+     * Initializes UI components from the layout.
      */
     private void initializeUIComponents() {
         cityInput = findViewById(R.id.editTextCity);
@@ -69,10 +77,11 @@ public class MainActivity extends AppCompatActivity {
         conditionDisplay = findViewById(R.id.condition);
         locationName = findViewById(R.id.locationName);
         progressBar = findViewById(R.id.progressBar);
+        forecastContainer = findViewById(R.id.forecastContainer);
     }
 
     /**
-     * Sets up click listener for weather fetch button
+     * Sets up the click listener for the weather fetch button.
      */
     private void setupWeatherFetchButton() {
         Button fetchButton = findViewById(R.id.buttonFetchWeather);
@@ -80,7 +89,9 @@ public class MainActivity extends AppCompatActivity {
             String city = cityInput.getText().toString().trim();
             if (!city.isEmpty()) {
                 hideKeyboard();
+                forecastContainer.removeAllViews(); // Clear previous forecast cards
                 fetchWeather(city, false);
+                fetchForecast(city);
             } else {
                 showToast("Please enter a city name");
             }
@@ -88,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Checks location permission status
+     * Checks for location permission and fetches current location weather if granted.
      */
     private void checkLocationPermission() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -104,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Hides the soft keyboard
+     * Hides the soft keyboard.
      */
     private void hideKeyboard() {
         View view = this.getCurrentFocus();
@@ -115,75 +126,82 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Fetches weather data from WeatherAPI
-     * @param location City name or coordinates
-     * @param isCurrentLocation True if using device location
+     * Builds the API URL for current weather data.
+     * @param encodedLocation URL-encoded location string.
+     * @return The complete API URL.
      */
-    private void fetchWeather(String location, boolean isCurrentLocation) {
-        showProgress(true);
-        try {
-            String encodedLocation = URLEncoder.encode(location, "UTF-8");
-            String url = buildApiUrl(encodedLocation);
-
-            OkHttpClient client = new OkHttpClient();
-            Request request = new Request.Builder().url(url).build();
-
-            client.newCall(request).enqueue(new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
-                    handleNetworkError();
-                }
-
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    handleApiResponse(response);
-                }
-            });
-        } catch (IOException e) {
-            handleEncodingError(e);
-        }
-    }
-
-    /**
-     * Builds API request URL
-     * @param encodedLocation URL-safe location string
-     * @return Complete API URL
-     */
-    private String buildApiUrl(String encodedLocation) {
+    private String buildCurrentWeatherApiUrl(String encodedLocation) {
         return "https://api.weatherapi.com/v1/current.json?key=" +
                 getString(R.string.weather_api_key) +
                 "&q=" + encodedLocation;
     }
 
     /**
-     * Handles API response data
-     * @param response API response object
+     * Builds the API URL for forecast data (next 3 days).
+     * @param encodedLocation URL-encoded location string.
+     * @return The complete API URL.
      */
-    private void handleApiResponse(Response response) throws IOException {
-        showProgress(false);
+    private String buildForecastApiUrl(String encodedLocation) {
+        return "https://api.weatherapi.com/v1/forecast.json?key=" +
+                getString(R.string.weather_api_key) +
+                "&q=" + encodedLocation + "&days=3";
+    }
+
+    /**
+     * Fetches current weather data and updates the UI.
+     * @param location City name or coordinates.
+     * @param isCurrentLocation True if using device location.
+     */
+    private void fetchWeather(String location, boolean isCurrentLocation) {
+        showProgress(true);
         try {
-            if (response.isSuccessful()) {
-                JSONObject jsonResponse = new JSONObject(response.body().string());
-                processWeatherData(jsonResponse);
-            } else {
-                handleApiError(response);
-            }
-        } catch (JSONException e) {
-            handleJsonError(e);
-        } finally {
-            response.close();
+            String encodedLocation = URLEncoder.encode(location, "UTF-8");
+            String url = buildCurrentWeatherApiUrl(encodedLocation);
+
+            OkHttpClient client = new OkHttpClient();
+            Request request = new Request.Builder().url(url).build();
+
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                    runOnUiThread(() -> {
+                        showProgress(false);
+                        showToast("Network error: " + e.getMessage());
+                    });
+                    Log.e("WeatherAPI", "Network error", e);
+                }
+
+                @Override
+                public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                    showProgress(false);
+                    if (!response.isSuccessful()) {
+                        assert response.body() != null;
+                        String errorBody = response.body().string();
+                        Log.e("WeatherAPI", "API Error: " + errorBody);
+                        runOnUiThread(() -> showToast("API Error: " + errorBody));
+                        return;
+                    }
+                    try (response) {
+                        assert response.body() != null;
+                        JSONObject jsonResponse = new JSONObject(response.body().string());
+                        processCurrentWeather(jsonResponse);
+                    } catch (JSONException e) {
+                        runOnUiThread(() -> showToast("Parsing error"));
+                        Log.e("WeatherAPI", "JSON Parsing error", e);
+                    }
+                }
+            });
+        } catch (IOException e) {
+            showProgress(false);
+            Log.e("WeatherAPI", "Encoding Error", e);
         }
     }
 
     /**
-     * Processes successful weather data
-     * @param jsonResponse Parsed JSON response
+     * Processes the JSON response for current weather and updates the UI.
+     * @param jsonResponse JSON response from the API.
      */
-    private void processWeatherData(JSONObject jsonResponse) throws JSONException {
-        if (!jsonResponse.has("location") || !jsonResponse.has("current")) {
-            throw new JSONException("Invalid API response structure");
-        }
-
+    private void processCurrentWeather(JSONObject jsonResponse) throws JSONException {
         JSONObject locationData = jsonResponse.getJSONObject("location");
         JSONObject currentData = jsonResponse.getJSONObject("current");
 
@@ -191,36 +209,136 @@ public class MainActivity extends AppCompatActivity {
         String temp = currentData.getString("temp_c") + "°C";
         String condition = "Condition: " + currentData.getJSONObject("condition").getString("text");
 
-        updateWeatherUI(city, temp, condition);
-    }
-
-    /**
-     * Updates UI with weather information
-     */
-    private void updateWeatherUI(String city, String temperature, String condition) {
         runOnUiThread(() -> {
             locationName.setText(city);
-            weatherDisplay.setText(temperature);
+            weatherDisplay.setText(temp);
             conditionDisplay.setText(condition);
         });
     }
 
     /**
-     * Handles API error responses
+     * Fetches forecast data for the next 3 days and populates the forecast container.
+     * @param location City name or coordinates.
      */
-    private void handleApiError(Response response) throws IOException {
+    private void fetchForecast(String location) {
         try {
-            String errorBody = response.body().string();
-            JSONObject errorJson = new JSONObject(errorBody);
-            String errorMessage = errorJson.getJSONObject("error").getString("message");
-            showToast("Error: " + errorMessage);
-        } catch (JSONException e) {
-            showToast("Unknown API error occurred");
+            String encodedLocation = URLEncoder.encode(location, "UTF-8");
+            String url = buildForecastApiUrl(encodedLocation);
+
+            OkHttpClient client = new OkHttpClient();
+            Request request = new Request.Builder().url(url).build();
+
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                    runOnUiThread(() -> showToast("Forecast network error: " + e.getMessage()));
+                    Log.e("ForecastAPI", "Network error", e);
+                }
+
+                @Override
+                public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                    if (!response.isSuccessful()) {
+                        assert response.body() != null;
+                        String errorBody = response.body().string();
+                        Log.e("ForecastAPI", "API Error: " + errorBody);
+                        runOnUiThread(() -> showToast("Forecast API Error: " + errorBody));
+                        return;
+                    }
+                    try (response) {
+                        assert response.body() != null;
+                        JSONObject jsonResponse = new JSONObject(response.body().string());
+                        processForecastData(jsonResponse);
+                    } catch (JSONException e) {
+                        runOnUiThread(() -> showToast("Forecast parsing error"));
+                        Log.e("ForecastAPI", "JSON Parsing error", e);
+                    }
+                }
+            });
+        } catch (IOException e) {
+            Log.e("ForecastAPI", "Encoding Error", e);
         }
     }
 
     /**
-     * Fetches current location weather data
+     * Processes forecast JSON data and populates the forecast container with modern forecast cards.
+     * Each card shows the date (formatted as '27 Jan') and min/max temperatures.
+     * @param jsonResponse JSON response from the forecast API.
+     */
+    private void processForecastData(JSONObject jsonResponse) throws JSONException {
+        if (!jsonResponse.has("forecast")) {
+            throw new JSONException("No forecast data available");
+        }
+        JSONObject forecastObj = jsonResponse.getJSONObject("forecast");
+        JSONArray forecastDays = forecastObj.getJSONArray("forecastday");
+
+        // Clear previous forecast views
+        runOnUiThread(() -> forecastContainer.removeAllViews());
+
+        // Formatter to convert "YYYY-MM-DD" to "dd MMM"
+        SimpleDateFormat apiDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        SimpleDateFormat displayDateFormat = new SimpleDateFormat("dd MMM", Locale.getDefault());
+
+        // Iterate over forecast days (expecting 3 days)
+        for (int i = 0; i < forecastDays.length(); i++) {
+            JSONObject dayForecast = forecastDays.getJSONObject(i);
+            String dateStr = dayForecast.getString("date");
+            final String displayDate;
+            String displayDate1;
+            try {
+                Date date = apiDateFormat.parse(dateStr);
+                assert date != null;
+                displayDate1 = displayDateFormat.format(date);
+            } catch (ParseException e) {
+                displayDate1 = dateStr;
+            }
+            displayDate = displayDate1;
+            JSONObject dayData = dayForecast.getJSONObject("day");
+            String maxTemp = dayData.getString("maxtemp_c") + "°C";
+            String minTemp = dayData.getString("mintemp_c") + "°C";
+
+            // Build forecast text for temperatures
+            final String tempText = String.format(Locale.getDefault(), "Min: %s | Max: %s", minTemp, maxTemp);
+
+            // Create a vertical LinearLayout for the forecast card
+            runOnUiThread(() -> {
+                LinearLayout cardLayout = new LinearLayout(MainActivity.this);
+                cardLayout.setOrientation(LinearLayout.VERTICAL);
+                // Each card will have equal weight to occupy full width without scrolling
+                LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+                cardParams.setMargins(16, 0, 16, 0);
+                cardLayout.setLayoutParams(cardParams);
+                cardLayout.setPadding(16, 16, 16, 16);
+                // Set the background with border (created in forecast_card_bg.xml)
+                cardLayout.setBackgroundResource(R.drawable.forecast_card_bg);
+
+                // Create and style the date TextView
+                TextView dateTextView = new TextView(MainActivity.this);
+                dateTextView.setText(displayDate);
+                dateTextView.setTextSize(16);
+                dateTextView.setTextColor(getResources().getColor(R.color.text_900));
+                dateTextView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                dateTextView.setTypeface(null, android.graphics.Typeface.BOLD);
+
+                // Create and style the temperatures TextView
+                TextView tempTextView = new TextView(MainActivity.this);
+                tempTextView.setText(tempText);
+                tempTextView.setTextSize(16);
+                tempTextView.setTextColor(getResources().getColor(R.color.text_900));
+                tempTextView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+
+                // Add the date and temperature TextViews to the card layout
+                cardLayout.addView(dateTextView);
+                cardLayout.addView(tempTextView);
+
+                // Add the card layout to the forecast container
+                forecastContainer.addView(cardLayout, cardParams);
+            });
+        }
+    }
+
+
+    /**
+     * Fetches weather data for the user's current location.
      */
     private void fetchCurrentLocationWeather() {
         showProgress(true);
@@ -235,13 +353,12 @@ public class MainActivity extends AppCompatActivity {
                     locationManager.removeUpdates(this);
                     String coordinates = location.getLatitude() + "," + location.getLongitude();
                     fetchWeather(coordinates, true);
+                    fetchForecast(coordinates);
                 }
 
                 @Override public void onStatusChanged(String provider, int status, Bundle extras) {}
                 @Override public void onProviderEnabled(@NonNull String provider) {}
-
-                @Override
-                public void onProviderDisabled(@NonNull String provider) {
+                @Override public void onProviderDisabled(@NonNull String provider) {
                     showProgress(false);
                     showToast("Enable GPS for location services");
                 }
@@ -262,19 +379,18 @@ public class MainActivity extends AppCompatActivity {
 
         } catch (SecurityException e) {
             showProgress(false);
-            showToast("Location permission required");
+            showToast("Location permissions are not granted");
         }
     }
 
     /**
-     * Handles permission request results
+     * Handles the result of the location permission request.
      */
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 fetchCurrentLocationWeather();
@@ -286,7 +402,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Shows permission denied explanation dialog
+     * Displays an alert dialog when location permission is denied.
      */
     private void showPermissionDeniedDialog() {
         new AlertDialog.Builder(this)
@@ -296,45 +412,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Controls progress bar visibility
-     * @param show True to show progress bar
+     * Controls the visibility of the progress bar.
+     * @param show True to show, false to hide.
      */
     private void showProgress(boolean show) {
-        runOnUiThread(() -> {
-            Log.d("ProgressBar", "Visibility: " + (show ? "VISIBLE" : "GONE")); // Nuevo log
-            progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
-        });
+        runOnUiThread(() -> progressBar.setVisibility(show ? View.VISIBLE : View.GONE));
     }
+
     /**
-     * Displays short toast messages
-     * @param message Message to display
+     * Displays a short toast message.
+     * @param message Message to display.
      */
     private void showToast(String message) {
-        runOnUiThread(() -> Toast.makeText(this, message, Toast.LENGTH_SHORT).show());
-    }
-
-    /**
-     * Handles network errors
-     */
-    private void handleNetworkError() {
-        showProgress(false);
-        showToast("Network connection required");
-    }
-
-    /**
-     * Handles JSON parsing errors
-     */
-    private void handleJsonError(JSONException e) {
-        showToast("Data parsing error");
-        Log.e("WeatherAPI", "JSON Error", e);
-    }
-
-    /**
-     * Handles URL encoding errors
-     */
-    private void handleEncodingError(IOException e) {
-        showProgress(false);
-        Log.e("WeatherAPI", "Encoding Error", e);
+        runOnUiThread(() -> Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show());
     }
 
     @Override
