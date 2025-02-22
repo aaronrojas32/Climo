@@ -5,4 +5,9 @@
     <color name="text_700">#BBBBBB</color> <!-- Otros textos -->
     <color name="text_900">#FFFFFF</color> <!-- Textos destacados -->
     <color name="main_600">#5468FF</color> <!-- Color del botón -->
+
+    <!-- NEW COLOR PALLET -->
+    <color name="main">#595959</color>
+    <color name="elements">#ffffff</color>
+    <color name="secondary">#999797</color>
 </resources>

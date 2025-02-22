@@ -16,7 +16,7 @@
         <item name="colorOnSecondary">@android:color/black</item>
 
         <!-- Barra de estado -->
-        <item name="android:statusBarColor">@color/main_500</item>
+        <item name="android:statusBarColor">@color/main</item>
 
         <!-- Fondo -->
         <item name="android:colorBackground">@color/backgoruound_night</item>

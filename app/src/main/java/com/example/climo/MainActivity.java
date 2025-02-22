@@ -315,7 +315,7 @@ public class MainActivity extends AppCompatActivity {
                 TextView dateTextView = new TextView(MainActivity.this);
                 dateTextView.setText(displayDate);
                 dateTextView.setTextSize(16);
-                dateTextView.setTextColor(getResources().getColor(R.color.text_900));
+                dateTextView.setTextColor(getResources().getColor(R.color.elements));
                 dateTextView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
                 dateTextView.setTypeface(null, android.graphics.Typeface.BOLD);
 
@@ -323,7 +323,7 @@ public class MainActivity extends AppCompatActivity {
                 TextView tempTextView = new TextView(MainActivity.this);
                 tempTextView.setText(tempText);
                 tempTextView.setTextSize(16);
-                tempTextView.setTextColor(getResources().getColor(R.color.text_900));
+                tempTextView.setTextColor(getResources().getColor(R.color.elements));
                 tempTextView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
 
                 // Add the date and temperature TextViews to the card layout

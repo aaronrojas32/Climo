@@ -16,4 +16,9 @@
 
     <!--Color usado para generar la paleta-->
     <color name="genarator">#6374ae</color>
+
+    <!-- NEW COLOR PALLET -->
+    <color name="main">#ffffff</color>
+    <color name="elements">#000000</color>
+    <color name="secondary">#808080</color>
 </resources>
