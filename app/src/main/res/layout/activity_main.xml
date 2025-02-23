@@ -21,6 +21,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
 
+    <ImageView
+        android:id="@+id/weatherIcon"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        app:layout_constraintTop_toBottomOf="@id/locationName"
+        app:layout_constraintBottom_toTopOf="@id/actualWeather"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:contentDescription="@string/weather_icon_desc"/>
+
     <!-- Subtitle -->
     <TextView
         android:id="@+id/subtitle"
@@ -117,15 +127,20 @@
         app:layout_constraintStart_toStartOf="parent"/>
 
     <!-- Forecast Container: 3-Day Forecast occupies full width -->
-    <LinearLayout
-        android:id="@+id/forecastContainer"
+    <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="16dp"
         app:layout_constraintTop_toBottomOf="@id/condition"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:id="@+id/forecastContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="8dp"/>
+    </HorizontalScrollView>
 
     <!-- Footer -->
     <TextView

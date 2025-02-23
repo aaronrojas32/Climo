@@ -14,10 +14,12 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -29,16 +31,15 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
+import java.text.DateFormatSymbols;
 
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+
+import com.bumptech.glide.Glide;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -52,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView locationName;
     private ProgressBar progressBar;
     private LinearLayout forecastContainer;
+    private ImageView weatherIcon;
 
     // Location Services
     private android.location.LocationManager locationManager;
@@ -78,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
         locationName = findViewById(R.id.locationName);
         progressBar = findViewById(R.id.progressBar);
         forecastContainer = findViewById(R.id.forecastContainer);
+        weatherIcon = findViewById(R.id.weatherIcon);
     }
 
     /**
@@ -89,9 +92,8 @@ public class MainActivity extends AppCompatActivity {
             String city = cityInput.getText().toString().trim();
             if (!city.isEmpty()) {
                 hideKeyboard();
-                forecastContainer.removeAllViews(); // Clear previous forecast cards
-                fetchWeather(city, false);
-                fetchForecast(city);
+                forecastContainer.removeAllViews();
+                fetchWeatherData(city); // Single call
             } else {
                 showToast("Please enter a city name");
             }
@@ -126,78 +128,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Builds the API URL for current weather data.
-     * @param encodedLocation URL-encoded location string.
-     * @return The complete API URL.
-     */
-    private String buildCurrentWeatherApiUrl(String encodedLocation) {
-        return "https://api.weatherapi.com/v1/current.json?key=" +
-                getString(R.string.weather_api_key) +
-                "&q=" + encodedLocation;
-    }
-
-    /**
-     * Builds the API URL for forecast data (next 3 days).
-     * @param encodedLocation URL-encoded location string.
-     * @return The complete API URL.
-     */
-    private String buildForecastApiUrl(String encodedLocation) {
-        return "https://api.weatherapi.com/v1/forecast.json?key=" +
-                getString(R.string.weather_api_key) +
-                "&q=" + encodedLocation + "&days=3";
-    }
-
-    /**
-     * Fetches current weather data and updates the UI.
-     * @param location City name or coordinates.
-     * @param isCurrentLocation True if using device location.
-     */
-    private void fetchWeather(String location, boolean isCurrentLocation) {
-        showProgress(true);
-        try {
-            String encodedLocation = URLEncoder.encode(location, "UTF-8");
-            String url = buildCurrentWeatherApiUrl(encodedLocation);
-
-            OkHttpClient client = new OkHttpClient();
-            Request request = new Request.Builder().url(url).build();
-
-            client.newCall(request).enqueue(new Callback() {
-                @Override
-                public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                    runOnUiThread(() -> {
-                        showProgress(false);
-                        showToast("Network error: " + e.getMessage());
-                    });
-                    Log.e("WeatherAPI", "Network error", e);
-                }
-
-                @Override
-                public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                    showProgress(false);
-                    if (!response.isSuccessful()) {
-                        assert response.body() != null;
-                        String errorBody = response.body().string();
-                        Log.e("WeatherAPI", "API Error: " + errorBody);
-                        runOnUiThread(() -> showToast("API Error: " + errorBody));
-                        return;
-                    }
-                    try (response) {
-                        assert response.body() != null;
-                        JSONObject jsonResponse = new JSONObject(response.body().string());
-                        processCurrentWeather(jsonResponse);
-                    } catch (JSONException e) {
-                        runOnUiThread(() -> showToast("Parsing error"));
-                        Log.e("WeatherAPI", "JSON Parsing error", e);
-                    }
-                }
-            });
-        } catch (IOException e) {
-            showProgress(false);
-            Log.e("WeatherAPI", "Encoding Error", e);
-        }
-    }
-
-    /**
      * Processes the JSON response for current weather and updates the UI.
      * @param jsonResponse JSON response from the API.
      */
@@ -209,6 +139,13 @@ public class MainActivity extends AppCompatActivity {
         String temp = currentData.getString("temp_c") + "°C";
         String condition = "Condition: " + currentData.getJSONObject("condition").getString("text");
 
+        String iconUrl = "https:" + currentData.getJSONObject("condition").getString("icon");
+        runOnUiThread(() -> {
+            Glide.with(MainActivity.this)
+                    .load(iconUrl)
+                    .into(weatherIcon);
+        });
+
         runOnUiThread(() -> {
             locationName.setText(city);
             weatherDisplay.setText(temp);
@@ -217,13 +154,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Fetches forecast data for the next 3 days and populates the forecast container.
-     * @param location City name or coordinates.
+     * Fetches both current weather and forecast data in a single API call
+     * @param location City name or coordinates (format: "lat,lon")
      */
-    private void fetchForecast(String location) {
+    private void fetchWeatherData(String location) {
+        showProgress(true);
         try {
             String encodedLocation = URLEncoder.encode(location, "UTF-8");
-            String url = buildForecastApiUrl(encodedLocation);
+            String url = "https://api.weatherapi.com/v1/forecast.json?key=" +
+                    getString(R.string.weather_api_key) +
+                    "&q=" + encodedLocation +
+                    "&days=3&aqi=no&alerts=no";
 
             OkHttpClient client = new OkHttpClient();
             Request request = new Request.Builder().url(url).build();
@@ -231,31 +172,50 @@ public class MainActivity extends AppCompatActivity {
             client.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                    runOnUiThread(() -> showToast("Forecast network error: " + e.getMessage()));
-                    Log.e("ForecastAPI", "Network error", e);
+                    runOnUiThread(() -> {
+                        showProgress(false);
+                        showToast("Network error: " + e.getMessage());
+                        Log.e("WeatherAPI", "Network error", e);
+                    });
                 }
 
                 @Override
                 public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                    if (!response.isSuccessful()) {
-                        assert response.body() != null;
-                        String errorBody = response.body().string();
-                        Log.e("ForecastAPI", "API Error: " + errorBody);
-                        runOnUiThread(() -> showToast("Forecast API Error: " + errorBody));
-                        return;
-                    }
+                    showProgress(false);
                     try (response) {
-                        assert response.body() != null;
-                        JSONObject jsonResponse = new JSONObject(response.body().string());
-                        processForecastData(jsonResponse);
+                        if (response.isSuccessful()) {
+                            assert response.body() != null;
+                            String responseData = response.body().string();
+                            JSONObject jsonResponse = new JSONObject(responseData);
+
+                            // Process both current and forecast data
+                            runOnUiThread(() -> {
+                                try {
+                                    processCurrentWeather(jsonResponse);
+                                    processForecastData(jsonResponse);
+                                } catch (JSONException e) {
+                                    showToast("Error processing data");
+                                    Log.e("DataProcessing", "JSON error", e);
+                                }
+                            });
+                        } else {
+                            String errorBody = response.body() != null ? response.body().string() : "Unknown error";
+                            runOnUiThread(() -> {
+                                showToast("API Error: " + errorBody);
+                                Log.e("WeatherAPI", "API Error: " + errorBody);
+                            });
+                        }
                     } catch (JSONException e) {
-                        runOnUiThread(() -> showToast("Forecast parsing error"));
-                        Log.e("ForecastAPI", "JSON Parsing error", e);
+                        runOnUiThread(() -> {
+                            showToast("Data parsing error");
+                            Log.e("JSON Parsing", "Error", e);
+                        });
                     }
                 }
             });
         } catch (IOException e) {
-            Log.e("ForecastAPI", "Encoding Error", e);
+            showProgress(false);
+            Log.e("Encoding", "Location encoding error", e);
         }
     }
 
@@ -265,75 +225,49 @@ public class MainActivity extends AppCompatActivity {
      * @param jsonResponse JSON response from the forecast API.
      */
     private void processForecastData(JSONObject jsonResponse) throws JSONException {
-        if (!jsonResponse.has("forecast")) {
-            throw new JSONException("No forecast data available");
-        }
-        JSONObject forecastObj = jsonResponse.getJSONObject("forecast");
-        JSONArray forecastDays = forecastObj.getJSONArray("forecastday");
+        JSONObject forecast = jsonResponse.getJSONObject("forecast");
+        JSONArray forecastDays = forecast.getJSONArray("forecastday");
 
-        // Clear previous forecast views
-        runOnUiThread(() -> forecastContainer.removeAllViews());
+        runOnUiThread(() -> {
+            forecastContainer.removeAllViews();
+            LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
 
-        // Formatter to convert "YYYY-MM-DD" to "dd MMM"
-        SimpleDateFormat apiDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        SimpleDateFormat displayDateFormat = new SimpleDateFormat("dd MMM", Locale.getDefault());
+            for (int i = 0; i < forecastDays.length(); i++) {
+                try {
+                    JSONObject day = forecastDays.getJSONObject(i);
+                    JSONObject dayData = day.getJSONObject("day");
+                    JSONObject condition = dayData.getJSONObject("condition");
 
-        // Iterate over forecast days (expecting 3 days)
-        for (int i = 0; i < forecastDays.length(); i++) {
-            JSONObject dayForecast = forecastDays.getJSONObject(i);
-            String dateStr = dayForecast.getString("date");
-            final String displayDate;
-            String displayDate1;
-            try {
-                Date date = apiDateFormat.parse(dateStr);
-                assert date != null;
-                displayDate1 = displayDateFormat.format(date);
-            } catch (ParseException e) {
-                displayDate1 = dateStr;
+                    View forecastItem = inflater.inflate(R.layout.item_forecast, forecastContainer, false);
+
+                    TextView date = forecastItem.findViewById(R.id.forecastDate);
+                    ImageView icon = forecastItem.findViewById(R.id.forecastIcon);
+                    TextView maxTemp = forecastItem.findViewById(R.id.forecastMaxTemp);
+                    TextView minTemp = forecastItem.findViewById(R.id.forecastMinTemp);
+
+                    // Formatear fecha simple
+                    String[] dateParts = day.getString("date").split("-");
+                    String formattedDate = dateParts[2] + " " + getMonthName(Integer.parseInt(dateParts[1]));
+
+                    date.setText(formattedDate);
+                    maxTemp.setText("Max: " + dayData.getString("maxtemp_c") + "°C");
+                    minTemp.setText("Min: " + dayData.getString("mintemp_c") + "°C");
+
+                    Glide.with(MainActivity.this)
+                            .load("https:" + condition.getString("icon"))
+                            .into(icon);
+
+                    forecastContainer.addView(forecastItem);
+
+                } catch (JSONException e) {
+                    Log.e("Forecast", "Error en día " + i, e);
+                }
             }
-            displayDate = displayDate1;
-            JSONObject dayData = dayForecast.getJSONObject("day");
-            String maxTemp = dayData.getString("maxtemp_c") + "°C";
-            String minTemp = dayData.getString("mintemp_c") + "°C";
+        });
+    }
 
-            // Build forecast text for temperatures
-            final String tempText = String.format(Locale.getDefault(), "Min: %s | Max: %s", minTemp, maxTemp);
-
-            // Create a vertical LinearLayout for the forecast card
-            runOnUiThread(() -> {
-                LinearLayout cardLayout = new LinearLayout(MainActivity.this);
-                cardLayout.setOrientation(LinearLayout.VERTICAL);
-                // Each card will have equal weight to occupy full width without scrolling
-                LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
-                cardParams.setMargins(16, 0, 16, 0);
-                cardLayout.setLayoutParams(cardParams);
-                cardLayout.setPadding(16, 16, 16, 16);
-                // Set the background with border (created in forecast_card_bg.xml)
-                cardLayout.setBackgroundResource(R.drawable.forecast_card_bg);
-
-                // Create and style the date TextView
-                TextView dateTextView = new TextView(MainActivity.this);
-                dateTextView.setText(displayDate);
-                dateTextView.setTextSize(16);
-                dateTextView.setTextColor(getResources().getColor(R.color.elements));
-                dateTextView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-                dateTextView.setTypeface(null, android.graphics.Typeface.BOLD);
-
-                // Create and style the temperatures TextView
-                TextView tempTextView = new TextView(MainActivity.this);
-                tempTextView.setText(tempText);
-                tempTextView.setTextSize(16);
-                tempTextView.setTextColor(getResources().getColor(R.color.elements));
-                tempTextView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-
-                // Add the date and temperature TextViews to the card layout
-                cardLayout.addView(dateTextView);
-                cardLayout.addView(tempTextView);
-
-                // Add the card layout to the forecast container
-                forecastContainer.addView(cardLayout, cardParams);
-            });
-        }
+    private String getMonthName(int month) {
+        return new DateFormatSymbols().getMonths()[month-1].substring(0, 3);
     }
 
 
@@ -352,8 +286,8 @@ public class MainActivity extends AppCompatActivity {
                     locationTimeoutHandler.removeCallbacksAndMessages(null);
                     locationManager.removeUpdates(this);
                     String coordinates = location.getLatitude() + "," + location.getLongitude();
-                    fetchWeather(coordinates, true);
-                    fetchForecast(coordinates);
+                    fetchWeatherData(coordinates);
+                    fetchWeatherData(coordinates);
                 }
 
                 @Override public void onStatusChanged(String provider, int status, Bundle extras) {}
