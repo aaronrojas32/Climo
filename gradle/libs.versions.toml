@@ -10,7 +10,7 @@ constraintlayout = "2.2.1"
 okhttp = "5.1.0"
 gson = "2.13.1"
 location = "21.3.0"
-glide = "4.16.0"
+glide = "5.0.4"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
